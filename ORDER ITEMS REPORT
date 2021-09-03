@@ -1,0 +1,42 @@
+
+-- Report:
+ 
+CREATE PROCEDURE [dbo].[USP_ORDER_DETAILS] 
+(
+	 @PageNumber INT
+	,@RowsOfPage INT
+	, @DEBUG  INT = 0
+)
+AS
+/*********************************************************************************************************************************
+Copyright       :	 
+Author          :	 
+Date            :	 
+Module          :	 
+Desc            :	 
+Execute			:	  EXEC [USP_ORDER_DETAILS] @PageNumber=2,@RowsOfPage=4
+
+Change History  :
+NAME						DATE             DESCRIPTION
+--------------			----------		--------------
+
+
+************************************************************************************************************************************/
+BEGIN
+
+	SET NOCOUNT ON
+	 
+		SELECT TP.PROD_NAME,CTD.UNIT_PRICE,CTD.QUANTITY--,TP.SIZE,CTD.COLOR
+		,CT.DATE_CREATED FROM TBL_CUSTOMER_TRANSACTION CT
+		JOIN TBL_CUSTOMER_TRANSACTION_DETAIL CTD
+		ON CTD.TRANSACTION_ID = CT.TRANSACTION_ID
+		JOIN   TBL_PRODUCTS TP
+		ON TP.ID = CTD.PRODUCT_ID
+		ORDER BY CT.DATE_CREATED 
+		OFFSET (@PageNumber-1)*@RowsOfPage ROWS
+		FETCH NEXT @RowsOfPage ROWS ONLY
+
+END
+GO
+
+ 

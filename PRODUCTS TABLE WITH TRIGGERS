@@ -1,0 +1,226 @@
+-- PRODUCTS TABLE WITH TRIGGERS
+USE [NAVTECH]
+GO
+/****** Object:  Table [dbo].[TBL_PRODUCTS]    Script Date: 9/1/2021 10:26:58 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[TBL_PRODUCTS](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[PROD_ID] [int] NULL,
+	[PROD_UNIQUE_ID] [nvarchar](50) NOT NULL,
+ 	[PROD_NAME] [nvarchar](80) NULL,
+	[PROD_DESC] [nvarchar](max) NULL,
+	[PROD_BRAND] [nvarchar](80) NULL,
+	[PROD_COLOR] [nvarchar](80) NULL,
+	[PROD_DEPARTMENT_ID] [int] NULL,
+	[PROD_UNIT_PRICE] [float] NULL,
+ 	[PROD_CATEGORY_ID] [int] NULL,
+	[U_NO] [int] NULL,
+	[PROD_ACTIVE] [smallint] NULL,
+	[PROD_UNIT] [nvarchar](50) NULL,
+	[SHOW_ON_WEB] [smallint] NULL,
+	[PROD_COST_PRICE] [float] NULL,
+	[PROD_WEIGHT] [float] NULL,
+	[PROD_STOCK] [int] NULL,
+	[PROD_VENDOR_ID] [int] NULL,
+	[PILL_TYPE] [varchar](20) NULL,
+	[PROD_SALE_UNIT] [varchar](10) NULL,
+	[THRESHOLD_LEVEL] [int] NULL,
+	[CREATED_DATE] [datetime] NULL,
+	[LAST_UPDATED_DATE] [datetime] NULL,
+	[UPDATED_BY] [varchar](50) NULL,
+	[LENGTH_UNIT] [varchar](10) NULL,
+	[CREATED_BY] [varchar](50) NULL,
+	[PARENT_PROD_UNIQUE_ID] [nvarchar](100) NULL,
+	[BASE_CYCLE] [int] NULL,
+ CONSTRAINT [PK_TBL_PROD] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (PAD_INDEX = ON, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 95, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Object:  Index [IX_Non_Cls_Prod_name]    Script Date: 9/1/2021 10:26:58 PM ******/
+CREATE NONCLUSTERED INDEX [IX_Non_Cls_Prod_name] ON [dbo].[TBL_PRODUCTS]
+(
+	[PROD_NAME] ASC,
+	[PROD_ACTIVE] ASC,
+	[SHOW_ON_WEB] ASC,
+	[PROD_UNIQUE_ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, 
+SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, 
+ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 80, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF)  
+GO
+
+/****** Object:  Index [IX_TBLPROD_ID_PROCE_TYPE_PARENT]    Script Date: 9/1/2021 10:26:58 PM ******/
+CREATE NONCLUSTERED INDEX [IX_TBLPROD_ID_PROCE_TYPE_PARENT] ON [dbo].[TBL_PRODUCTS]
+(
+	[PROD_UNIQUE_ID] ASC,
+	[PROD_UNIT_PRICE] ASC,
+	[PILL_TYPE] ASC,
+	[PARENT_PROD_UNIQUE_ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF,
+ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, FILLFACTOR = 80, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+ 
+------
+CREATE TABLE [dbo].[TBL_PRODUCTS_LOG](
+	[ID] [int] NOT NULL,
+	[PROD_ID] [int] NULL,
+	[PROD_UNIQUE_ID] [nvarchar](50) NOT NULL,
+ 	[PROD_NAME] [nvarchar](80) NULL,
+	[PROD_DESC] [nvarchar](max) NULL,
+	[PROD_BRAND] [nvarchar](80) NULL,
+	[PROD_COLOR] [nvarchar](80) NULL,
+	[PROD_DEPARTMENT_ID] [int] NULL,
+	[PROD_UNIT_PRICE] [float] NULL,
+ 	[PROD_CATEGORY_ID] [int] NULL,
+	[U_NO] [int] NULL,
+	[PROD_ACTIVE] [smallint] NULL,
+	[PROD_UNIT] [nvarchar](50) NULL,
+	[SHOW_ON_WEB] [smallint] NULL,
+	[PROD_COST_PRICE] [float] NULL,
+	[PROD_WEIGHT] [float] NULL,
+	[PROD_STOCK] [int] NULL,
+	[PROD_VENDOR_ID] [int] NULL,
+	[PILL_TYPE] [varchar](20) NULL,
+	[PROD_SALE_UNIT] [varchar](10) NULL,
+	[THRESHOLD_LEVEL] [int] NULL,
+	[CREATED_DATE] [datetime] NULL,
+	[LAST_UPDATED_DATE] [datetime] NULL,
+	[UPDATED_BY] [varchar](50) NULL,
+	[LENGTH_UNIT] [varchar](10) NULL,
+	[CREATED_BY] [varchar](50) NULL,
+	[PARENT_PROD_UNIQUE_ID] [nvarchar](100) NULL,
+	[BASE_CYCLE] [int] NULL
+	)
+	 
+
+--drop  trigger [trg_DELETE_ON_TBL_PRODUCTS]
+CREATE TRIGGER [dbo].[trg_DELETE_ON_TBL_PRODUCTS]
+ON [dbo].[TBL_PRODUCTS] 
+FOR DELETE
+AS
+/*****************************************
+Copyright       :   
+Author          :   
+Date            :   
+Module          :   
+Desc            :   
+Execute			:  
+
+Change History  :
+Name                    Date                      Description
+
+********************************************/
+BEGIN
+	DECLARE @DEL_ID INT,
+	@DEL_PROD_UNIQUE_ID VARCHAR(15)
+
+	SELECT @DEL_ID = del.ID,@DEL_PROD_UNIQUE_ID = del.PROD_UNIQUE_ID  FROM DELETED del;
+	DELETE FROM TBL_PRODUCTS_LOG WHERE ID = @DEL_ID AND PROD_UNIQUE_ID = @DEL_PROD_UNIQUE_ID
+
+	INSERT INTO TBL_PRODUCTS_LOG
+	SELECT * FROM DELETED;
+
+END
+GO
+ALTER TABLE [dbo].[TBL_PRODUCTS] ENABLE TRIGGER [trg_DELETE_ON_TBL_PRODUCTS]
+GO
+ 
+CREATE TRIGGER [dbo].[trg_INSERT_ON_TBL_PRODUCTS]
+ON [dbo].[TBL_PRODUCTS] 
+FOR INSERT --, UPDATE 
+AS
+/*****************************************
+Copyright       : 
+Author          : 
+Date            : 
+Module          : 
+Desc            :  
+Execute			: 
+
+Change History  :
+Name                    Date                      Description
+ ********************************************/
+BEGIN
+    SET NOCOUNT ON
+         
+	INSERT INTO TBL_PRODUCTS_LOG
+	SELECT * FROM Inserted 
+END
+
+GO
+ALTER TABLE [dbo].[TBL_PRODUCTS] ENABLE TRIGGER [trg_INSERT_ON_TBL_PRODUCTS]
+GO
+/****** Object:  Trigger [dbo].[trg_UPDATE_ON_TBL_PRODUCTS]    Script Date: 9/1/2021 10:26:58 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+ALTER TRIGGER [dbo].[trg_UPDATE_ON_TBL_PRODUCTS]
+ON [dbo].[TBL_PRODUCTS] 
+AFTER  UPDATE 
+AS
+/*****************************************
+Copyright       :   
+Author          :   
+Date            :   
+Module          :   
+Desc            :   
+Execute			: 
+
+Change History  :
+Name                    Date                      Description
+
+********************************************/
+BEGIN
+	INSERT INTO TBL_PRODUCTS_LOG
+	SELECT * FROM INSERTED    
+END
+GO
+ALTER TABLE [dbo].[TBL_PRODUCTS] ENABLE TRIGGER [trg_UPDATE_ON_TBL_PRODUCTS]
+GO
+
+
+
+---Testing
+
+
+ INSERT INTO TBL_PRODUCTS
+ (PROD_ID,PROD_UNIQUE_ID,PROD_NAME,PROD_COLOR)
+VALUES (1,'T5HHHHDR','OMEGA','WHITE')
+
+ INSERT INTO TBL_PRODUCTS
+ (PROD_ID,PROD_UNIQUE_ID,PROD_NAME,PROD_COLOR)
+VALUES (2,'XYZ885D','VITAMIN D','BROWN')
+
+ INSERT INTO TBL_PRODUCTS
+ (PROD_ID,PROD_UNIQUE_ID,PROD_NAME,PROD_COLOR)
+VALUES (3,'ERRFT53D','FOUNDATION MULTI','WHITE')
+
+ INSERT INTO TBL_PRODUCTS
+ (PROD_ID,PROD_UNIQUE_ID,PROD_NAME,PROD_COLOR)
+VALUES (4,'ERRRERFT53D','FOUNDATION','WHITE')
+
+SELECT * FROM TBL_PRODUCTS 
+SELECT * FROM TBL_PRODUCTS_LOG  
+ 
+DELETE FROM TBL_PRODUCTS  WHERE ID =2 
+SELECT *  FROM TBL_PRODUCTS_LOG  WHERE ID =1
+
+
+UPDATE TBL_PRODUCTS
+SET PROD_NAME = 'TEST'
+WHERE ID = 4
+
+SELECT * FROM TBL_PRODUCTS 
+SELECT * FROM TBL_PRODUCTS_LOG  
+

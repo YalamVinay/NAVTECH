@@ -1,0 +1,74 @@
+-- PLACE ORDER  
+CREATE PROCEDURE [dbo].[USP_PLACEORDER] 
+(
+	 @CUSTOMER_ID INT
+	, @DEBUG  INT = 0
+)
+AS
+/*********************************************************************************************************************************
+Copyright       :	 
+Author          :	 
+Date            :	 
+Module          :	 
+Desc            :	 
+Execute			:	  EXEC [USP_PLACEORDER] @CUSTOMER_ID=1
+
+Change History  :
+NAME						DATE             DESCRIPTION
+--------------			----------		--------------
+
+
+************************************************************************************************************************************/
+BEGIN
+
+	SET NOCOUNT ON
+	 DECLARE @customerid INT,@LASTID INT;
+		
+ BEGIN TRAN	 
+	BEGIN TRY	  
+		SELECT  @customerid  = CUSTOMER_ID FROM TBL_CUSTOMER_CART  WHERE CUSTOMER_ID = @CUSTOMER_ID
+		IF (@@ROWCOUNT = 1)  
+			BEGIN 
+				
+				BEGIN
+					insert into tbl_customer_transaction (TRANSACTION_CUSTOMER_ID,TRANSACTION_DATE,TRANSACTION_STATUS)
+					select customer_id, CREATE_DATE as TRANSACTION_DATE,3 AS TRANSACTION_STATUS from TBL_CUSTOMER_CART 
+					where customer_id = @customerid
+				END
+				 SET @LASTID = @@IDENTITY
+
+
+				BEGIN
+					insert into tbl_customer_transaction_detail (transaction_id,PRODUCT_ID,QUANTITY,COLOUR,SIZE )
+					select @LASTID as transaction_id , product_id ,QUANTITY, ISNULL(COLOUR,1),100 AS SIZE
+					from TBL_CUSTOMER_CART_DETAIL where customer_id = @customerid
+				END
+
+
+		 
+			 END
+COMMIT TRAN
+	END TRY
+	
+	BEGIN catch
+ROLLBACK TRAN
+
+          SELECT Error_number()    AS ErrorNumber,
+                 Error_severity()  AS ErrorSeverity,
+                 Error_state()     AS ErrorState,
+                 Error_procedure() AS ErrorProcedure,
+                 Error_line()      AS ErrorLine,
+                 Error_message()   AS ErrorMessage;
+      END catch
+
+ 
+	  SELECT * FROM tbl_customer_transaction    WHERE  TRANSACTION_CUSTOMER_ID = @CUSTOMER_ID
+	  SELECT * FROM tbl_customer_transaction_DETAIL 
+
+
+END
+GO
+
+   EXEC [USP_PLACEORDER] @CUSTOMER_ID=1
+
+ 

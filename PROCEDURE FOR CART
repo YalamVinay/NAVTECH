@@ -1,0 +1,75 @@
+-- ADD PRODUCTS INTO CARD  
+CREATE PROCEDURE [dbo].[USP_CART] 
+(
+	 @CUSTOMER_ID INT
+	,@PRODUCTID INT
+	, @DEBUG  INT = 0
+)
+AS
+/*********************************************************************************************************************************
+Copyright       :	 
+Author          :	 
+Date            :	 
+Module          :	 
+Desc            :	 
+Execute			:	  EXEC [USP_CART] @CUSTOMER_ID=1,@PRODUCTID=4
+
+Change History  :
+NAME						DATE             DESCRIPTION
+--------------			----------		--------------
+
+
+************************************************************************************************************************************/
+BEGIN
+
+	SET NOCOUNT ON
+	 DECLARE @customerid INT;
+	 DECLARE @CUSTOMER_CART_ID INT;
+		
+	 
+	BEGIN TRY	  
+			
+		SELECT  @customerid  = CUSTOMER_ID FROM TBL_CUSTOMER_LIST  WHERE CUSTOMER_ID = @CUSTOMER_ID
+		IF (@@ROWCOUNT = 1)  
+			BEGIN 
+					SELECT  @customerid =  CUSTOMER_ID FROM TBL_CUSTOMER_CART  WHERE CUSTOMER_ID = @CUSTOMER_ID
+
+					BEGIN 
+					IF (@@ROWCOUNT = 0)
+						BEGIN 
+							 INSERT INTO TBL_CUSTOMER_CART (CUSTOMER_ID,CREATE_DATE,UPDATED_DATE,STATUS)
+							 VALUES (@CUSTOMER_ID,GETDATE(),GETDATE(),1)
+						END
+					END
+
+ 
+					BEGIN 
+						INSERT INTO TBL_CUSTOMER_CART_DETAIL (CUSTOMER_ID,PRODUCT_ID,CREATE_DATE,UPDATED_DATE,STATUS)
+						VALUES ( @CUSTOMER_ID ,@PRODUCTID,GETDATE(),GETDATE(),1)
+					END
+						 
+
+
+		 
+			 END
+	END TRY
+	
+	BEGIN catch
+          SELECT Error_number()    AS ErrorNumber,
+                 Error_severity()  AS ErrorSeverity,
+                 Error_state()     AS ErrorState,
+                 Error_procedure() AS ErrorProcedure,
+                 Error_line()      AS ErrorLine,
+                 Error_message()   AS ErrorMessage;
+      END catch
+
+/*
+	  SELECT * FROM TBL_CUSTOMER_CART WHERE  CUSTOMER_ID = @CUSTOMER_ID
+	  SELECT * FROM TBL_CUSTOMER_CART_DETAIL WHERE  CUSTOMER_ID = @CUSTOMER_ID
+*/
+
+END
+GO
+
+--   EXEC [USP_CART] @CUSTOMER_ID=1,@PRODUCTID=4
+
